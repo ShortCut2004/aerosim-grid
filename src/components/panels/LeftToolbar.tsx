@@ -143,7 +143,7 @@ export const LeftToolbar = () => {
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-50">
                   <SelectItem value="spread-evenly">Spread Evenly</SelectItem>
                   <SelectItem value="cluster">Cluster</SelectItem>
                   <SelectItem value="minimize-distance">Minimize Distance</SelectItem>

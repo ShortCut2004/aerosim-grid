@@ -54,7 +54,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   aircraft: sampleAircraft,
   
   // User
-  currentUser: { id: 'demo-admin', username: 'admin', role: 'admin' },
+  currentUser: { id: 'guest', username: 'guest', role: 'viewer' },
   
   // UI State
   selectedPositionId: null,

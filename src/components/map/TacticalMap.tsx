@@ -18,14 +18,48 @@ const createPositionIcon = (occupancy: number, capacity: number, isSelected: boo
   else if (percentage > 50) color = '#f59e0b';
   else if (percentage > 0) color = '#3b82f6';
 
-  const borderColor = isSelected ? '#f59e0b' : '#1e293b';
-  const size = isSelected ? 28 : 24;
-  
+  const borderColor = isSelected ? '#f59e0b' : '#0f172a';
+
+  const width = 62;
+  const height = 42;
+
+  const html = `
+    <div style="
+      position: relative;
+      width: ${width}px;
+      height: ${height}px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: ${color};
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+      border: 3px solid ${borderColor};
+      border-radius: 10px;
+      box-shadow: 0 6px 14px ${color}50;
+    ">
+      ${occupancy}/${capacity}
+      <div style="
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid ${color};
+        filter: drop-shadow(0 2px 4px ${color}60);
+      "></div>
+    </div>
+  `;
+
   return L.divIcon({
-    html: `<div style="width:${size}px;height:${size}px;background:${color};border:3px solid ${borderColor};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:white;box-shadow:0 0 10px ${color}80;">${occupancy}/${capacity}</div>`,
+    html,
     className: 'custom-position-marker',
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    iconSize: [width, height + 10],
+    iconAnchor: [width / 2, height + 10],
   });
 };
 
@@ -35,6 +69,46 @@ const createBaseIcon = (name: string) => {
     className: 'custom-base-marker',
     iconSize: [100, 24],
     iconAnchor: [50, 12],
+  });
+};
+
+const createPlacementHintIcon = () => {
+  const width = 22;
+  const height = 22;
+  const color = '#9ca3af'; // gray
+
+  const html = `
+    <div style="
+      position: relative;
+      width: ${width}px;
+      height: ${height}px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: ${color};
+      border-radius: 10px;
+      box-shadow: 0 4px 10px ${color}60;
+    ">
+      <div style="
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid ${color};
+        filter: drop-shadow(0 2px 4px ${color}60);
+      "></div>
+    </div>
+  `;
+
+  return L.divIcon({
+    html,
+    className: 'placement-hint-marker',
+    iconSize: [width, height + 8],
+    iconAnchor: [width / 2, height + 8],
   });
 };
 
@@ -55,7 +129,8 @@ export const TacticalMap = () => {
     if (!containerRef.current || mapRef.current) return;
 
     // Initialize map
-    const map = L.map(containerRef.current).setView([35.5, 45.75], 12);
+    const defaultCenter: L.LatLngExpression = [31.0461, 34.8516];
+    const map = L.map(containerRef.current).setView(defaultCenter, 9);
     mapRef.current = map;
 
     // Add tile layer
@@ -125,6 +200,21 @@ export const TacticalMap = () => {
           <div style="font-weight: bold;">${position.name}</div>
           <div>Type: ${position.type}</div>
           <div>Capacity: ${occupancy}/${position.capacity}</div>
+        </div>
+      `);
+    });
+
+    // Add placement hint markers (gray arrows) that list available bases
+    const availableBases = bases.map((b) => b.name).join(', ');
+    positions.forEach((position) => {
+      const hintMarker = L.marker([position.latitude, position.longitude], {
+        icon: createPlacementHintIcon(),
+      }).addTo(mapRef.current!);
+
+      hintMarker.bindPopup(`
+        <div style="font-family: monospace; font-size: 12px;">
+          <div style="font-weight: bold; margin-bottom: 4px;">Placement Options</div>
+          <div>Available bases: ${availableBases}</div>
         </div>
       `);
     });

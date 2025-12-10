@@ -148,7 +148,7 @@ export const AircraftPalette = () => {
               <SelectTrigger className="w-32 h-8">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-50">
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="fighter">Fighter</SelectItem>
                 <SelectItem value="bomber">Bomber</SelectItem>
@@ -161,7 +161,7 @@ export const AircraftPalette = () => {
               <SelectTrigger className="w-32 h-8">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-50">
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
                 <SelectItem value="assigned">Assigned</SelectItem>

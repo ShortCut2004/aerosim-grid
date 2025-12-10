@@ -7,24 +7,24 @@ export const sampleBases: Base[] = [
   {
     id: 'base-01',
     name: 'Test Base Alpha',
-    latitude: 35.50,
-    longitude: 45.75,
+    latitude: 31.900,
+    longitude: 34.850,
     capacity: 12,
     metadata: { region: 'Test Region A', status: 'active' }
   },
   {
     id: 'base-02',
     name: 'Test Base Bravo',
-    latitude: 35.65,
-    longitude: 45.90,
+    latitude: 32.250,
+    longitude: 35.050,
     capacity: 8,
     metadata: { region: 'Test Region A', status: 'active' }
   },
   {
     id: 'base-03',
     name: 'Test Base Charlie',
-    latitude: 35.35,
-    longitude: 45.60,
+    latitude: 31.550,
+    longitude: 35.250,
     capacity: 16,
     metadata: { region: 'Test Region A', status: 'active' }
   }
@@ -32,22 +32,22 @@ export const sampleBases: Base[] = [
 
 export const samplePositions: Position[] = [
   // Base Alpha positions
-  { id: 'pos-a1', baseId: 'base-01', name: 'Hardpoint A1', latitude: 35.5005, longitude: 45.7502, type: 'hardpoint', capacity: 2 },
-  { id: 'pos-a2', baseId: 'base-01', name: 'Hardpoint A2', latitude: 35.5010, longitude: 45.7508, type: 'hardpoint', capacity: 2 },
-  { id: 'pos-a3', baseId: 'base-01', name: 'Hangar A1', latitude: 35.4995, longitude: 45.7495, type: 'hangar', capacity: 4 },
-  { id: 'pos-a4', baseId: 'base-01', name: 'Apron A1', latitude: 35.4990, longitude: 45.7510, type: 'apron', capacity: 4 },
+  { id: 'pos-a1', baseId: 'base-01', name: 'Hardpoint A1', latitude: 31.9015, longitude: 34.8515, type: 'hardpoint', capacity: 2 },
+  { id: 'pos-a2', baseId: 'base-01', name: 'Hardpoint A2', latitude: 31.8995, longitude: 34.8485, type: 'hardpoint', capacity: 2 },
+  { id: 'pos-a3', baseId: 'base-01', name: 'Hangar A1', latitude: 31.9020, longitude: 34.8490, type: 'hangar', capacity: 4 },
+  { id: 'pos-a4', baseId: 'base-01', name: 'Apron A1', latitude: 31.8985, longitude: 34.8520, type: 'apron', capacity: 4 },
   
   // Base Bravo positions
-  { id: 'pos-b1', baseId: 'base-02', name: 'Hardpoint B1', latitude: 35.6505, longitude: 45.9002, type: 'hardpoint', capacity: 2 },
-  { id: 'pos-b2', baseId: 'base-02', name: 'Hardpoint B2', latitude: 35.6510, longitude: 45.9008, type: 'hardpoint', capacity: 2 },
-  { id: 'pos-b3', baseId: 'base-02', name: 'Hangar B1', latitude: 35.6495, longitude: 45.8995, type: 'hangar', capacity: 4 },
+  { id: 'pos-b1', baseId: 'base-02', name: 'Hardpoint B1', latitude: 32.2495, longitude: 35.0510, type: 'hardpoint', capacity: 2 },
+  { id: 'pos-b2', baseId: 'base-02', name: 'Hardpoint B2', latitude: 32.2520, longitude: 35.0480, type: 'hardpoint', capacity: 2 },
+  { id: 'pos-b3', baseId: 'base-02', name: 'Hangar B1', latitude: 32.2475, longitude: 35.0465, type: 'hangar', capacity: 4 },
   
   // Base Charlie positions
-  { id: 'pos-c1', baseId: 'base-03', name: 'Hardpoint C1', latitude: 35.3505, longitude: 45.6002, type: 'hardpoint', capacity: 2 },
-  { id: 'pos-c2', baseId: 'base-03', name: 'Hardpoint C2', latitude: 35.3510, longitude: 45.6008, type: 'hardpoint', capacity: 2 },
-  { id: 'pos-c3', baseId: 'base-03', name: 'Hardpoint C3', latitude: 35.3515, longitude: 45.6014, type: 'hardpoint', capacity: 2 },
-  { id: 'pos-c4', baseId: 'base-03', name: 'Hangar C1', latitude: 35.3495, longitude: 45.5995, type: 'hangar', capacity: 6 },
-  { id: 'pos-c5', baseId: 'base-03', name: 'Apron C1', latitude: 35.3490, longitude: 45.6010, type: 'apron', capacity: 4 },
+  { id: 'pos-c1', baseId: 'base-03', name: 'Hardpoint C1', latitude: 31.5515, longitude: 35.2480, type: 'hardpoint', capacity: 2 },
+  { id: 'pos-c2', baseId: 'base-03', name: 'Hardpoint C2', latitude: 31.5530, longitude: 35.2525, type: 'hardpoint', capacity: 2 },
+  { id: 'pos-c3', baseId: 'base-03', name: 'Hardpoint C3', latitude: 31.5495, longitude: 35.2510, type: 'hardpoint', capacity: 2 },
+  { id: 'pos-c4', baseId: 'base-03', name: 'Hangar C1', latitude: 31.5480, longitude: 35.2470, type: 'hangar', capacity: 6 },
+  { id: 'pos-c5', baseId: 'base-03', name: 'Apron C1', latitude: 31.5470, longitude: 35.2500, type: 'apron', capacity: 4 },
 ];
 
 export const sampleAircraft: Aircraft[] = [
