@@ -21,6 +21,7 @@ interface SimulationState {
   selectedAlgorithm: AlgorithmType;
   algorithmParams: AlgorithmParams;
   tileLayerUrl: string;
+  aircraftFilter: 'all' | 'suspicious' | 'air' | 'ground' | null; // פילטר מטוסים במפה
   
   // Actions
   setCurrentUser: (user: User | null) => void;
@@ -30,6 +31,7 @@ interface SimulationState {
   setSelectedAlgorithm: (algorithm: AlgorithmType) => void;
   setAlgorithmParams: (params: Partial<AlgorithmParams>) => void;
   setTileLayerUrl: (url: string) => void;
+  setAircraftFilter: (filter: 'all' | 'suspicious' | 'air' | 'ground' | null) => void;
   
   // Assignment Actions
   assignAircraft: (aircraftId: string, positionId: string) => boolean;
@@ -42,6 +44,7 @@ interface SimulationState {
   // Data Management
   updateAircraft: (aircraft: Aircraft[]) => void;
   updatePositions: (positions: Position[]) => void;
+  updateAircraftLocation: (aircraftId: string, lat: number, lon: number, location: 'ground' | 'air') => void;
   
   // Computed
   getPositionOccupancy: (positionId: string) => number;
@@ -73,6 +76,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
     distanceWeight: 1.0
   },
   tileLayerUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  aircraftFilter: null,
   
   // Actions
   setCurrentUser: (user) => set({ currentUser: user }),
@@ -84,6 +88,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
     algorithmParams: { ...state.algorithmParams, ...params }
   })),
   setTileLayerUrl: (url) => set({ tileLayerUrl: url }),
+  setAircraftFilter: (filter) => set({ aircraftFilter: filter }),
   
   // Assignment
   assignAircraft: (aircraftId, positionId) => {
@@ -266,6 +271,24 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   // Data Management
   updateAircraft: (aircraft) => set({ aircraft }),
   updatePositions: (positions) => set({ positions }),
+  updateAircraftLocation: (aircraftId, lat, lon, location) => {
+    set((state) => ({
+      aircraft: state.aircraft.map(a =>
+        a.id === aircraftId
+          ? {
+              ...a,
+              location,
+              locationUncertain: false,
+              uncertainLatitude: undefined,
+              uncertainLongitude: undefined,
+              homeLatitude: lat,
+              homeLongitude: lon,
+              lastStatusUpdate: new Date(),
+            }
+          : a
+      )
+    }));
+  },
   
   // Computed
   getPositionOccupancy: (positionId) => {

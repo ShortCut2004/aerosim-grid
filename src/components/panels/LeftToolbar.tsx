@@ -1,27 +1,14 @@
 import { useState } from 'react';
 import { 
   Plane, 
-  Settings, 
-  Play, 
-  Square, 
-  RefreshCw, 
   Layers,
-  MousePointer,
-  Zap,
   ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,31 +16,93 @@ import {
 } from '@/components/ui/collapsible';
 import { useSimulationStore } from '@/hooks/useSimulationStore';
 import { cn } from '@/lib/utils';
+import { Aircraft } from '@/types/simulation';
 
 export const LeftToolbar = () => {
   const {
-    placementMode,
-    setPlacementMode,
-    selectedAlgorithm,
-    setSelectedAlgorithm,
-    algorithmParams,
-    setAlgorithmParams,
     tileLayerUrl,
     setTileLayerUrl,
-    runAutoDistribute,
-    clearAllAssignments,
     currentUser,
     aircraft,
     getUnassignedAircraft,
+    bases,
+    squadrons,
+    shelters,
+    domes,
+    aircraftFilter,
+    setAircraftFilter,
+    updateAircraftLocation,
   } = useSimulationStore();
 
-  const [isAlgoOpen, setIsAlgoOpen] = useState(true);
   const [isLayerOpen, setIsLayerOpen] = useState(false);
   const [customUrl, setCustomUrl] = useState(tileLayerUrl);
 
   const isAdmin = currentUser?.role === 'admin';
-  const unassignedCount = getUnassignedAircraft().length;
-  const assignedCount = aircraft.filter(a => a.assignedPositionId !== null).length;
+  
+  // Calculate aircraft by category
+  // אם אין מטוס בכיפה, הוא נחשב באוויר
+  const allAircraft = aircraft;
+  const suspiciousAircraft = aircraft.filter(a => a.locationUncertain === true);
+  
+  // מטוסים באוויר: location === 'air' או שאין להם כיפה מוקצית (assignedDomeId === null)
+  // אם אין מטוס בכיפה, הוא נחשב באוויר
+  const aircraftInAir = aircraft.filter(a => 
+    !a.locationUncertain && (
+      a.location === 'air' || 
+      a.assignedDomeId === null
+    )
+  );
+  
+  // מטוסים על הקרקע: location === 'ground' ויש להם כיפה מוקצית
+  const aircraftOnGround = aircraft.filter(a => 
+    !a.locationUncertain && 
+    a.location === 'ground' && 
+    a.assignedDomeId !== null
+  );
+  
+  // Get filtered aircraft list based on current filter
+  const getFilteredAircraft = (): Aircraft[] => {
+    if (aircraftFilter === 'all') {
+      return allAircraft;
+    } else if (aircraftFilter === 'suspicious') {
+      return suspiciousAircraft;
+    } else if (aircraftFilter === 'air') {
+      return aircraftInAir;
+    } else if (aircraftFilter === 'ground') {
+      return aircraftOnGround;
+    }
+    return [];
+  };
+
+  const filteredAircraftList = getFilteredAircraft();
+  
+  const formatDate = (date?: Date) => {
+    if (!date) return 'לא עודכן';
+    return new Intl.DateTimeFormat('he-IL', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  };
+  
+  const getAircraftLocation = (aircraft: Aircraft) => {
+    if (aircraft.assignedDomeId) {
+      const dome = domes.find(d => d.id === aircraft.assignedDomeId);
+      if (dome) {
+        const shelter = shelters.find(s => s.id === dome.shelterId);
+        if (shelter) {
+          const squadron = squadrons.find(sq => sq.id === shelter.squadronId);
+          if (squadron) {
+            const base = bases.find(b => b.id === squadron.baseId);
+            return base ? `${base.name} - ${squadron.name} - ${shelter.name}` : 'לא ידוע';
+          }
+        }
+      }
+    }
+    return 'לא מוקצה';
+  };
 
   const tilePresets = [
     { name: 'OpenStreetMap', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
@@ -80,123 +129,136 @@ export const LeftToolbar = () => {
 
       {/* Stats */}
       <div className="p-4 border-b border-border">
-            <div className="panel-header">סטטוס</div>
+        <div className="panel-header">סטטוס</div>
         <div className="grid grid-cols-2 gap-2">
-          <div className="bg-secondary rounded-md p-2 text-center">
-            <div className="text-xl font-mono font-bold text-primary">{assignedCount}</div>
-            <div className="text-xs text-muted-foreground">מוקצים</div>
-          </div>
-          <div className="bg-secondary rounded-md p-2 text-center">
-            <div className="text-xl font-mono font-bold text-accent">{unassignedCount}</div>
-            <div className="text-xs text-muted-foreground">לא מוקצים</div>
-          </div>
+          <button
+            onClick={() => setAircraftFilter('all')}
+            className={`bg-secondary hover:bg-secondary/80 rounded-md p-2 text-center cursor-pointer transition-colors ${
+              aircraftFilter === 'all' ? 'ring-2 ring-primary' : ''
+            }`}
+          >
+            <div className="text-xl font-mono font-bold text-primary">{allAircraft.length}</div>
+            <div className="text-xs text-muted-foreground">כל המטוסים</div>
+          </button>
+          <button
+            onClick={() => setAircraftFilter('suspicious')}
+            className={`bg-secondary hover:bg-secondary/80 rounded-md p-2 text-center cursor-pointer transition-colors ${
+              aircraftFilter === 'suspicious' ? 'ring-2 ring-red-500' : ''
+            }`}
+          >
+            <div className="text-xl font-mono font-bold text-red-500">{suspiciousAircraft.length}</div>
+            <div className="text-xs text-muted-foreground">חשודים</div>
+          </button>
+          <button
+            onClick={() => setAircraftFilter('air')}
+            className={`bg-secondary hover:bg-secondary/80 rounded-md p-2 text-center cursor-pointer transition-colors ${
+              aircraftFilter === 'air' ? 'ring-2 ring-blue-500' : ''
+            }`}
+          >
+            <div className="text-xl font-mono font-bold text-blue-500">{aircraftInAir.length}</div>
+            <div className="text-xs text-muted-foreground">באוויר</div>
+          </button>
+          <button
+            onClick={() => setAircraftFilter('ground')}
+            className={`bg-secondary hover:bg-secondary/80 rounded-md p-2 text-center cursor-pointer transition-colors ${
+              aircraftFilter === 'ground' ? 'ring-2 ring-green-500' : ''
+            }`}
+          >
+            <div className="text-xl font-mono font-bold text-green-500">{aircraftOnGround.length}</div>
+            <div className="text-xs text-muted-foreground">על הקרקע</div>
+          </button>
         </div>
       </div>
 
-      {/* Mode Toggle */}
-      <div className="p-4 border-b border-border">
-        <div className="panel-header">מצב שיבוץ</div>
-        <div className="flex gap-2">
-          <Button
-            variant={placementMode === 'manual' ? 'tactical' : 'outline'}
-            size="sm"
-            className="flex-1"
-            onClick={() => setPlacementMode('manual')}
-            disabled={!isAdmin}
-          >
-            <MousePointer className="w-4 h-4" />
-            ידני
-          </Button>
-          <Button
-            variant={placementMode === 'automatic' ? 'tactical' : 'outline'}
-            size="sm"
-            className="flex-1"
-            onClick={() => setPlacementMode('automatic')}
-            disabled={!isAdmin}
-          >
-            <Zap className="w-4 h-4" />
-            אוטומטי
-          </Button>
+      {/* Aircraft List in Sidebar */}
+      {aircraftFilter && aircraftFilter !== 'all' ? (
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="p-4 border-b border-border">
+            <div className="panel-header">
+              {aircraftFilter === 'suspicious' ? 'מטוסים חשודים' : 
+               aircraftFilter === 'air' ? 'מטוסים באוויר' : 
+               'מטוסים על הקרקע'}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              סה"כ {filteredAircraftList.length} מטוסים
+            </div>
+          </div>
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-2">
+              {filteredAircraftList.map((aircraft) => {
+                const isSuspicious = aircraft.locationUncertain === true;
+                const isDraggable = isSuspicious || aircraftFilter === 'air' || aircraftFilter === 'ground';
+                
+                return (
+                  <div
+                    key={aircraft.id}
+                    className={`border rounded-lg p-3 hover:bg-secondary/50 transition-colors ${
+                      isSuspicious ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : ''
+                    }`}
+                    draggable={isDraggable}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('aircraftId', aircraft.id);
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="font-bold">{aircraft.callsign}</Badge>
+                        <Badge variant="secondary">{aircraft.type}</Badge>
+                        {isSuspicious ? (
+                          <Badge variant="destructive">מיקום לא מעודכן</Badge>
+                        ) : (
+                          <Badge variant={aircraft.location === 'air' ? 'default' : 'outline'}>
+                            {aircraft.location === 'air' ? 'באוויר' : 'על הקרקע'}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>
+                        <span className="font-medium">מיקום:</span>{' '}
+                        {isSuspicious ? 'לא ידוע' : getAircraftLocation(aircraft)}
+                      </div>
+                      {aircraft.lastStatusUpdate && (
+                        <div>
+                          <span className="font-medium">עדכון אחרון:</span>{' '}
+                          {formatDate(aircraft.lastStatusUpdate)}
+                          {aircraft.lastStatusUpdatedBy && (
+                            <div className="text-xs mt-1">
+                              {aircraft.lastStatusUpdatedBy.name} ({aircraft.lastStatusUpdatedBy.personalNumber})
+                              {aircraft.lastStatusUpdatedBy.phone && (
+                                <span className="ml-2">- {aircraft.lastStatusUpdatedBy.phone}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {isDraggable && (
+                        <div className="text-xs text-blue-500 mt-2 font-medium">
+                          💡 גרור למפה לעדכון מיקום
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {filteredAircraftList.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                  אין מטוסים ברשימה
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </div>
-      </div>
+      ) : (
+        /* Spacer - only when no aircraft list is shown */
+        <div className="flex-1" />
+      )}
 
-      {/* Algorithm Settings */}
-      <Collapsible open={isAlgoOpen} onOpenChange={setIsAlgoOpen}>
-        <CollapsibleTrigger asChild>
-          <div className="p-4 border-b border-border cursor-pointer hover:bg-secondary/50 transition-colors flex items-center justify-between">
-            <div className="panel-header mb-0">הגדרות אלגוריתם</div>
-            <ChevronDown className={cn(
-              "w-4 h-4 text-muted-foreground transition-transform",
-              isAlgoOpen && "rotate-180"
-            )} />
-          </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="p-4 pt-0 space-y-4">
-            <div>
-              <Label className="text-xs text-muted-foreground mb-2 block">בחירת אלגוריתם</Label>
-              <Select
-                value={selectedAlgorithm}
-                onValueChange={(v) => setSelectedAlgorithm(v as any)}
-                disabled={!isAdmin}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="z-50">
-                  <SelectItem value="spread-evenly">פיזור אחיד</SelectItem>
-                  <SelectItem value="cluster">ריכוז</SelectItem>
-                  <SelectItem value="minimize-distance">מינ׳ מרחק</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground mb-2 block">
-                מקסימום בכל נקודה (0 = קיבולת מלאה)
-              </Label>
-              <Slider
-                value={[algorithmParams.maxPerPosition]}
-                onValueChange={([v]) => setAlgorithmParams({ maxPerPosition: v })}
-                min={0}
-                max={10}
-                step={1}
-                disabled={!isAdmin}
-              />
-              <div className="text-xs text-muted-foreground mt-1 text-right font-mono">
-                {algorithmParams.maxPerPosition || 'Auto'}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="tactical"
-                size="sm"
-                className="flex-1"
-                onClick={runAutoDistribute}
-                disabled={!isAdmin || placementMode !== 'automatic'}
-              >
-                <Play className="w-4 h-4" />
-                Run
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAllAssignments}
-                disabled={!isAdmin}
-              >
-                <RefreshCw className="w-4 h-4" />
-                Clear
-              </Button>
-            </div>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Tile Layer Settings */}
+      {/* Tile Layer Settings - moved to bottom */}
       <Collapsible open={isLayerOpen} onOpenChange={setIsLayerOpen}>
         <CollapsibleTrigger asChild>
-          <div className="p-4 border-b border-border cursor-pointer hover:bg-secondary/50 transition-colors flex items-center justify-between">
+          <div className="p-4 border-t border-border cursor-pointer hover:bg-secondary/50 transition-colors flex items-center justify-between">
             <div className="panel-header mb-0">Map Layer</div>
             <ChevronDown className={cn(
               "w-4 h-4 text-muted-foreground transition-transform",
@@ -242,16 +304,6 @@ export const LeftToolbar = () => {
           </div>
         </CollapsibleContent>
       </Collapsible>
-
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* Footer */}
-      <div className="p-4 border-t border-border">
-        <div className="text-xs text-muted-foreground text-center">
-          Synthetic Data Only - Test Region A
-        </div>
-      </div>
     </div>
   );
 };
