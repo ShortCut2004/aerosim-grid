@@ -13,15 +13,15 @@ L.Icon.Default.mergeOptions({
 
 const createPositionIcon = (occupancy: number, capacity: number, isSelected: boolean) => {
   const percentage = capacity > 0 ? (occupancy / capacity) * 100 : 0;
-  let color = '#22c55e';
+  let color = '#16a34a';
   if (percentage > 75) color = '#ef4444';
   else if (percentage > 50) color = '#f59e0b';
-  else if (percentage > 0) color = '#3b82f6';
+  else if (percentage > 0) color = '#22c55e';
 
-  const borderColor = isSelected ? '#f59e0b' : '#0f172a';
+  const borderColor = isSelected ? '#f97316' : '#0b1224';
 
-  const width = 62;
-  const height = 42;
+  const width = 70;
+  const height = 46;
 
   const html = `
     <div style="
@@ -31,26 +31,27 @@ const createPositionIcon = (occupancy: number, capacity: number, isSelected: boo
       display: flex;
       align-items: center;
       justify-content: center;
-      background: ${color};
+      background: linear-gradient(180deg, ${color} 0%, ${color}dd 100%);
       color: white;
-      font-weight: 700;
-      font-size: 12px;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.2px;
       border: 3px solid ${borderColor};
-      border-radius: 10px;
-      box-shadow: 0 6px 14px ${color}50;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px ${color}40, 0 0 0 1px #0b122420;
     ">
       ${occupancy}/${capacity}
       <div style="
         position: absolute;
-        bottom: -10px;
+        bottom: -12px;
         left: 50%;
         transform: translateX(-50%);
         width: 0;
         height: 0;
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-top: 10px solid ${color};
-        filter: drop-shadow(0 2px 4px ${color}60);
+        border-left: 12px solid transparent;
+        border-right: 12px solid transparent;
+        border-top: 12px solid ${borderColor};
+        filter: drop-shadow(0 4px 6px ${borderColor}70);
       "></div>
     </div>
   `;
@@ -58,8 +59,8 @@ const createPositionIcon = (occupancy: number, capacity: number, isSelected: boo
   return L.divIcon({
     html,
     className: 'custom-position-marker',
-    iconSize: [width, height + 10],
-    iconAnchor: [width / 2, height + 10],
+    iconSize: [width, height + 12],
+    iconAnchor: [width / 2, height + 12],
   });
 };
 
@@ -72,43 +73,28 @@ const createBaseIcon = (name: string) => {
   });
 };
 
-const createPlacementHintIcon = () => {
-  const width = 22;
-  const height = 22;
-  const color = '#9ca3af'; // gray
-
+const createPlaneIcon = () => {
   const html = `
     <div style="
-      position: relative;
-      width: ${width}px;
-      height: ${height}px;
+      width: 22px;
+      height: 22px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: ${color};
-      border-radius: 10px;
-      box-shadow: 0 4px 10px ${color}60;
-    ">
-      <div style="
-        position: absolute;
-        bottom: -8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0;
-        height: 0;
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-        border-top: 8px solid ${color};
-        filter: drop-shadow(0 2px 4px ${color}60);
-      "></div>
-    </div>
+      background: #0ea5e9;
+      color: white;
+      border-radius: 50%;
+      box-shadow: 0 4px 10px #0ea5e980;
+      font-size: 12px;
+      font-weight: 700;
+    ">✈️</div>
   `;
 
   return L.divIcon({
     html,
-    className: 'placement-hint-marker',
-    iconSize: [width, height + 8],
-    iconAnchor: [width / 2, height + 8],
+    className: 'plane-icon-marker',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
   });
 };
 
@@ -204,19 +190,20 @@ export const TacticalMap = () => {
       `);
     });
 
-    // Add placement hint markers (gray arrows) that list available bases
-    const availableBases = bases.map((b) => b.name).join(', ');
-    positions.forEach((position) => {
-      const hintMarker = L.marker([position.latitude, position.longitude], {
-        icon: createPlacementHintIcon(),
-      }).addTo(mapRef.current!);
+    // Add simple plane markers near each base (fixed offsets to keep stable)
+    const offsets: Array<[number, number]> = [
+      [0.01, 0.01],
+      [-0.012, 0.006],
+      [0.008, -0.009],
+    ];
 
-      hintMarker.bindPopup(`
-        <div style="font-family: monospace; font-size: 12px;">
-          <div style="font-weight: bold; margin-bottom: 4px;">Placement Options</div>
-          <div>Available bases: ${availableBases}</div>
-        </div>
-      `);
+    bases.forEach((base) => {
+      offsets.forEach((offset) => {
+        const [latOffset, lonOffset] = offset;
+        L.marker([base.latitude + latOffset, base.longitude + lonOffset], {
+          icon: createPlaneIcon(),
+        }).addTo(mapRef.current!);
+      });
     });
 
     // Center map on bases

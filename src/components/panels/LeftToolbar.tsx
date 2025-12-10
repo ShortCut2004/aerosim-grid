@@ -68,7 +68,7 @@ export const LeftToolbar = () => {
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2 mb-2">
           <Plane className="w-5 h-5 text-primary" />
-          <h1 className="font-semibold text-foreground">Aircraft Simulator</h1>
+          <h1 className="font-semibold text-foreground">סימולטור מטוסים</h1>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant={currentUser?.role === 'admin' ? 'tactical' : 'muted'}>
@@ -80,22 +80,22 @@ export const LeftToolbar = () => {
 
       {/* Stats */}
       <div className="p-4 border-b border-border">
-        <div className="panel-header">Status</div>
+            <div className="panel-header">סטטוס</div>
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-secondary rounded-md p-2 text-center">
             <div className="text-xl font-mono font-bold text-primary">{assignedCount}</div>
-            <div className="text-xs text-muted-foreground">Assigned</div>
+            <div className="text-xs text-muted-foreground">מוקצים</div>
           </div>
           <div className="bg-secondary rounded-md p-2 text-center">
             <div className="text-xl font-mono font-bold text-accent">{unassignedCount}</div>
-            <div className="text-xs text-muted-foreground">Unassigned</div>
+            <div className="text-xs text-muted-foreground">לא מוקצים</div>
           </div>
         </div>
       </div>
 
       {/* Mode Toggle */}
       <div className="p-4 border-b border-border">
-        <div className="panel-header">Placement Mode</div>
+        <div className="panel-header">מצב שיבוץ</div>
         <div className="flex gap-2">
           <Button
             variant={placementMode === 'manual' ? 'tactical' : 'outline'}
@@ -105,7 +105,7 @@ export const LeftToolbar = () => {
             disabled={!isAdmin}
           >
             <MousePointer className="w-4 h-4" />
-            Manual
+            ידני
           </Button>
           <Button
             variant={placementMode === 'automatic' ? 'tactical' : 'outline'}
@@ -115,7 +115,7 @@ export const LeftToolbar = () => {
             disabled={!isAdmin}
           >
             <Zap className="w-4 h-4" />
-            Auto
+            אוטומטי
           </Button>
         </div>
       </div>
@@ -124,7 +124,7 @@ export const LeftToolbar = () => {
       <Collapsible open={isAlgoOpen} onOpenChange={setIsAlgoOpen}>
         <CollapsibleTrigger asChild>
           <div className="p-4 border-b border-border cursor-pointer hover:bg-secondary/50 transition-colors flex items-center justify-between">
-            <div className="panel-header mb-0">Algorithm Settings</div>
+            <div className="panel-header mb-0">הגדרות אלגוריתם</div>
             <ChevronDown className={cn(
               "w-4 h-4 text-muted-foreground transition-transform",
               isAlgoOpen && "rotate-180"
@@ -134,7 +134,7 @@ export const LeftToolbar = () => {
         <CollapsibleContent>
           <div className="p-4 pt-0 space-y-4">
             <div>
-              <Label className="text-xs text-muted-foreground mb-2 block">Algorithm</Label>
+              <Label className="text-xs text-muted-foreground mb-2 block">בחירת אלגוריתם</Label>
               <Select
                 value={selectedAlgorithm}
                 onValueChange={(v) => setSelectedAlgorithm(v as any)}
@@ -144,16 +144,16 @@ export const LeftToolbar = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="z-50">
-                  <SelectItem value="spread-evenly">Spread Evenly</SelectItem>
-                  <SelectItem value="cluster">Cluster</SelectItem>
-                  <SelectItem value="minimize-distance">Minimize Distance</SelectItem>
+                  <SelectItem value="spread-evenly">פיזור אחיד</SelectItem>
+                  <SelectItem value="cluster">ריכוז</SelectItem>
+                  <SelectItem value="minimize-distance">מינ׳ מרחק</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <Label className="text-xs text-muted-foreground mb-2 block">
-                Max Per Position (0 = use capacity)
+                מקסימום בכל נקודה (0 = קיבולת מלאה)
               </Label>
               <Slider
                 value={[algorithmParams.maxPerPosition]}

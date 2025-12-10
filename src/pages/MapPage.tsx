@@ -1,6 +1,5 @@
 import { TacticalMap } from '@/components/map/TacticalMap';
 import { LeftToolbar } from '@/components/panels/LeftToolbar';
-import { RightSidePanel } from '@/components/panels/RightSidePanel';
 
 const MapPage = () => {
   return (
@@ -14,9 +13,6 @@ const MapPage = () => {
         <div className="flex-1 relative min-h-[400px]">
           <TacticalMap />
         </div>
-
-        {/* Right Side Panel */}
-        <RightSidePanel />
       </div>
     </div>
   );
