@@ -1,12 +1,15 @@
 import { create } from 'zustand';
-import { Base, Position, Aircraft, User, PlacementMode, AlgorithmType, AlgorithmParams } from '@/types/simulation';
-import { sampleBases, samplePositions, sampleAircraft } from '@/data/sampleData';
+import { Base, Position, Aircraft, User, PlacementMode, AlgorithmType, AlgorithmParams, Squadron, Shelter, Dome } from '@/types/simulation';
+import { sampleBases, samplePositions, sampleAircraft, sampleSquadrons, sampleShelters, sampleDomes } from '@/data/sampleData';
 
 interface SimulationState {
   // Data
   bases: Base[];
   positions: Position[];
   aircraft: Aircraft[];
+  squadrons: Squadron[];
+  shelters: Shelter[];
+  domes: Dome[];
   
   // User & Auth
   currentUser: User | null;
@@ -52,6 +55,9 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   bases: sampleBases,
   positions: samplePositions,
   aircraft: sampleAircraft,
+  squadrons: sampleSquadrons,
+  shelters: sampleShelters,
+  domes: sampleDomes,
   
   // User
   currentUser: { id: 'guest', username: 'guest', role: 'viewer' },

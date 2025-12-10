@@ -7,6 +7,31 @@ export interface Base {
   metadata?: Record<string, unknown>;
 }
 
+export interface Squadron {
+  id: string;
+  baseId: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface Shelter {
+  id: string;
+  squadronId: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface Dome {
+  id: string;
+  shelterId: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  aircraftId: string | null; // null אם אין מטוס
+}
+
 export interface Position {
   id: string;
   baseId: string;
@@ -24,6 +49,7 @@ export interface Aircraft {
   size: 'small' | 'medium' | 'large';
   status: 'assigned' | 'unassigned' | 'maintenance' | 'deployed';
   assignedPositionId: string | null;
+  assignedDomeId: string | null; // כיפה מוקצית
   homeLatitude?: number;
   homeLongitude?: number;
 }

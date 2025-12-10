@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useSimulationStore } from '@/hooks/useSimulationStore';
+import { zoomToBase } from '@/components/map/TacticalMap';
 import { cn } from '@/lib/utils';
 
 export const RightSidePanel = () => {
@@ -19,6 +20,10 @@ export const RightSidePanel = () => {
     getUnassignedAircraft,
     assignAircraft,
   } = useSimulationStore();
+  
+  const handleBaseClick = (baseId: string) => {
+    zoomToBase(baseId, bases);
+  };
 
   const selectedPosition = positions.find((p) => p.id === selectedPositionId);
   const base = selectedPosition ? bases.find((b) => b.id === selectedPosition.baseId) : null;
@@ -73,7 +78,13 @@ export const RightSidePanel = () => {
             {selectedPosition.type}
           </Badge>
           {base && (
-            <span className="text-xs text-muted-foreground">{base.name}</span>
+            <span 
+              className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors"
+              onClick={() => handleBaseClick(base.id)}
+              title="Click to zoom to base"
+            >
+              {base.name}
+            </span>
           )}
         </div>
       </div>
