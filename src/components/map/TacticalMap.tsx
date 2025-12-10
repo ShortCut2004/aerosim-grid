@@ -159,8 +159,9 @@ const calculateDomePositions = (
   domeCount: number,
   index: number
 ): [number, number] => {
-  // Offset distance in degrees (approximately 0.0003 degrees ≈ 30 meters)
-  const offset = 0.0003;
+  // הגדלת המרחק בין כיפות - בערך 0.0008 מעלות ≈ 80 מטר (לעומת 0.0003 בעבר)
+  // זה יגדיל את שטח הסכם (הריבוע) של כל דתק
+  const offset = 0.0008;
   
   // Calculate grid dimensions
   const cols = domeCount <= 3 ? 2 : 2;
@@ -372,7 +373,8 @@ export const TacticalMap = () => {
         });
         
         // Calculate bounding box for the domes (with padding)
-        const padding = 0.00025; // padding around domes
+        // הגדלת ה-padding כדי להתאים למרחק הגדול יותר בין הכיפות
+        const padding = 0.0004; // padding around domes (הוגדל מ-0.00025)
         const lats = domePositions.map(p => p[0]);
         const lons = domePositions.map(p => p[1]);
         const minLat = Math.min(...lats) - padding;
@@ -519,21 +521,49 @@ export const TacticalMap = () => {
       } else if (aircraftFilter === 'suspicious') {
         filteredAircraft = aircraft.filter(a => a.locationUncertain === true);
       } else if (aircraftFilter === 'air') {
-        // מטוסים באוויר: location === 'air' או שאין להם כיפה מוקצית
-        // אם אין מטוס בכיפה, הוא נחשב באוויר
-        filteredAircraft = aircraft.filter(a => 
-          !a.locationUncertain && (
-            a.location === 'air' || 
-            a.assignedDomeId === null
-          )
-        );
+        // מטוסים באוויר: 
+        // 1. location === 'air' ו-!locationUncertain (גם אם יש assignedDomeId)
+        // 2. יש assignedDomeId אבל הכיפה ריקה (dome.aircraftId === null) - נחשב באוויר
+        // 3. יש assignedDomeId אבל הכיפה מכילה מטוס אחר (dome.aircraftId !== a.id) - נחשב באוויר
+        filteredAircraft = aircraft.filter(a => {
+          if (a.locationUncertain) return false; // מטוסים חשודים לא נכללים כאן
+          
+          // אם המטוס לא מוקצה לכיפה, בודקים לפי location
+          if (a.assignedDomeId === null) {
+            return a.location === 'air';
+          }
+          
+          // אם המטוס מוקצה לכיפה, בודקים את מצב הכיפה
+          const dome = domes.find(d => d.id === a.assignedDomeId);
+          if (!dome) {
+            // אם הכיפה לא קיימת, בודקים לפי location
+            return a.location === 'air';
+          }
+          
+          // אם הכיפה ריקה, המטוס באוויר (גם אם location === 'ground')
+          if (dome.aircraftId === null) return true;
+          
+          // אם הכיפה מכילה מטוס אחר, המטוס הזה לא על הקרקע
+          if (dome.aircraftId !== a.id) return true;
+          
+          // אם הכיפה מכילה את המטוס הזה, בודקים לפי location
+          return a.location === 'air';
+        });
       } else if (aircraftFilter === 'ground') {
-        // מטוסים על הקרקע: location === 'ground' ויש להם כיפה מוקצית
-        filteredAircraft = aircraft.filter(a => 
-          !a.locationUncertain && 
-          a.location === 'ground' && 
-          a.assignedDomeId !== null
-        );
+        // מטוסים על הקרקע: 
+        // כל מטוס שהכיפה שלו מכילה אותו (dome.aircraftId === a.id)
+        // זה מסתנכרן עם ListView שסופר כיפות תפוסות
+        filteredAircraft = aircraft.filter(a => {
+          if (a.locationUncertain) return false; // מטוסים חשודים לא נכללים כאן
+          if (a.assignedDomeId === null) return false;
+          
+          // בודקים אם הכיפה באמת מכילה את המטוס
+          const dome = domes.find(d => d.id === a.assignedDomeId);
+          if (!dome) return false;
+          
+          // אם הכיפה מכילה את המטוס הזה, הוא על הקרקע (לא משנה מה ה-location שלו)
+          return dome.aircraftId === a.id;
+        });
       }
       filteredAircraft.forEach((plane) => {
         // Determine position - use uncertain coordinates if available, otherwise use home or dome location

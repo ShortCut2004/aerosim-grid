@@ -23,7 +23,7 @@ const updateUsers: UpdateInfo[] = [
 
 export const sampleBases: Base[] = [
   { id: 'base-01', name: 'פלמחים', latitude: 31.93, longitude: 34.72, capacity: 12, metadata: { region: 'Test Region A', status: 'active' } },
-  { id: 'base-02', name: 'תל נוף', latitude: 31.82, longitude: 34.89, capacity: 10, metadata: { region: 'Test Region A', status: 'active' } },
+  { id: 'base-02', name: 'תל נוף', latitude: 31.82, longitude: 35.1, capacity: 10, metadata: { region: 'Test Region A', status: 'active' } },
   { id: 'base-03', name: 'גן יבנה', latitude: 31.78, longitude: 34.71, capacity: 8, metadata: { region: 'Test Region A', status: 'active' } },
   { id: 'base-04', name: 'מצפה רמון', latitude: 30.61, longitude: 34.80, capacity: 6, metadata: { region: 'Test Region A', status: 'active' } },
   { id: 'base-05', name: 'רמת דוד', latitude: 32.70, longitude: 35.18, capacity: 14, metadata: { region: 'Test Region A', status: 'active' } },
@@ -35,8 +35,8 @@ export const sampleSquadrons: Squadron[] = [
   { id: 'sq-01', baseId: 'base-01', name: 'טייסת 101', latitude: 31.931, longitude: 34.722 },
   { id: 'sq-02', baseId: 'base-01', name: 'טייסת 102', latitude: 31.929, longitude: 34.718 },
   // תל נוף
-  { id: 'sq-03', baseId: 'base-02', name: 'טייסת 201', latitude: 31.821, longitude: 34.891 },
-  { id: 'sq-04', baseId: 'base-02', name: 'טייסת 202', latitude: 31.819, longitude: 34.887 },
+  { id: 'sq-03', baseId: 'base-02', name: 'טייסת 201', latitude: 31.821, longitude: 35.101 },
+  { id: 'sq-04', baseId: 'base-02', name: 'טייסת 202', latitude: 31.819, longitude: 35.097 },
   // גן יבנה
   { id: 'sq-05', baseId: 'base-03', name: 'טייסת 301', latitude: 31.781, longitude: 34.712 },
   // מצפה רמון
@@ -46,44 +46,45 @@ export const sampleSquadrons: Squadron[] = [
   { id: 'sq-08', baseId: 'base-05', name: 'טייסת 502', latitude: 32.699, longitude: 35.179 },
   // טייסות נוספות
   { id: 'sq-09', baseId: 'base-01', name: 'טייסת 103', latitude: 31.927, longitude: 34.716 },
-  { id: 'sq-10', baseId: 'base-02', name: 'טייסת 203', latitude: 31.817, longitude: 34.885 },
+  { id: 'sq-10', baseId: 'base-02', name: 'טייסת 203', latitude: 31.817, longitude: 35.095 },
 ];
 
 // דתקים - כל טייסת יש לה דתקים, כל דתק מייצג סוג מטוס/מסוק מסוים
+// הגדלת המרחק בין דתקים כדי שיהיו יותר מרווחים בזום
 export const sampleShelters: Shelter[] = [
-  // טייסת 101 - מטוסי קרב (fighter)
-  { id: 'sh-01', squadronId: 'sq-01', name: 'דתק 1', latitude: 31.9315, longitude: 34.7225, aircraftType: 'fighter', lastUpdated: createDate(2, 14, 30), updatedBy: updateUsers[0] },
-  { id: 'sh-02', squadronId: 'sq-01', name: 'דתק 2', latitude: 31.9305, longitude: 34.7215, aircraftType: 'fighter', lastUpdated: createDate(1, 10, 15), updatedBy: updateUsers[1] },
-  { id: 'sh-03', squadronId: 'sq-01', name: 'דתק 3', latitude: 31.9325, longitude: 34.7235, aircraftType: 'fighter', lastUpdated: createDate(3, 16, 45), updatedBy: updateUsers[2] },
-  // טייסת 102 - מטוסי הפצצה (bomber)
-  { id: 'sh-04', squadronId: 'sq-02', name: 'דתק 1', latitude: 31.9295, longitude: 34.7185, aircraftType: 'bomber', lastUpdated: createDate(1, 9, 20), updatedBy: updateUsers[0] },
-  { id: 'sh-05', squadronId: 'sq-02', name: 'דתק 2', latitude: 31.9285, longitude: 34.7175, aircraftType: 'bomber', lastUpdated: createDate(2, 11, 0), updatedBy: updateUsers[3] },
-  // טייסת 201 - מטוסי תובלה (transport)
-  { id: 'sh-06', squadronId: 'sq-03', name: 'דתק 1', latitude: 31.8215, longitude: 34.8915, aircraftType: 'transport', lastUpdated: createDate(0, 8, 30), updatedBy: updateUsers[1] },
-  { id: 'sh-07', squadronId: 'sq-03', name: 'דתק 2', latitude: 31.8205, longitude: 34.8905, aircraftType: 'transport', lastUpdated: createDate(1, 13, 10), updatedBy: updateUsers[4] },
-  { id: 'sh-08', squadronId: 'sq-03', name: 'דתק 3', latitude: 31.8225, longitude: 34.8925, aircraftType: 'transport', lastUpdated: createDate(2, 15, 25), updatedBy: updateUsers[5] },
-  // טייסת 202 - מטוסי סיור (recon)
-  { id: 'sh-09', squadronId: 'sq-04', name: 'דתק 1', latitude: 31.8195, longitude: 34.8875, aircraftType: 'recon', lastUpdated: createDate(1, 12, 0), updatedBy: updateUsers[2] },
-  { id: 'sh-10', squadronId: 'sq-04', name: 'דתק 2', latitude: 31.8185, longitude: 34.8865, aircraftType: 'recon', lastUpdated: createDate(0, 7, 45), updatedBy: updateUsers[0] },
+  // טייסת 101 - מטוסי קרב (fighter) - בסיס פלמחים (31.93, 34.72)
+  { id: 'sh-01', squadronId: 'sq-01', name: 'דתק 1', latitude: 31.9360, longitude: 34.7260, aircraftType: 'fighter', lastUpdated: createDate(2, 14, 30), updatedBy: updateUsers[0] },
+  { id: 'sh-02', squadronId: 'sq-01', name: 'דתק 2', latitude: 31.9320, longitude: 34.7220, aircraftType: 'fighter', lastUpdated: createDate(1, 10, 15), updatedBy: updateUsers[1] },
+  { id: 'sh-03', squadronId: 'sq-01', name: 'דתק 3', latitude: 31.9400, longitude: 34.7300, aircraftType: 'fighter', lastUpdated: createDate(3, 16, 45), updatedBy: updateUsers[2] },
+  // טייסת 102 - מטוסי הפצצה (bomber) - בסיס פלמחים
+  { id: 'sh-04', squadronId: 'sq-02', name: 'דתק 1', latitude: 31.9280, longitude: 34.7180, aircraftType: 'bomber', lastUpdated: createDate(1, 9, 20), updatedBy: updateUsers[0] },
+  { id: 'sh-05', squadronId: 'sq-02', name: 'דתק 2', latitude: 31.9240, longitude: 34.7140, aircraftType: 'bomber', lastUpdated: createDate(2, 11, 0), updatedBy: updateUsers[3] },
+  // טייסת 201 - מטוסי תובלה (transport) - בסיס תל נוף (31.82, 35.1)
+  { id: 'sh-06', squadronId: 'sq-03', name: 'דתק 1', latitude: 31.8260, longitude: 35.1060, aircraftType: 'transport', lastUpdated: createDate(0, 8, 30), updatedBy: updateUsers[1] },
+  { id: 'sh-07', squadronId: 'sq-03', name: 'דתק 2', latitude: 31.8220, longitude: 35.1020, aircraftType: 'transport', lastUpdated: createDate(1, 13, 10), updatedBy: updateUsers[4] },
+  { id: 'sh-08', squadronId: 'sq-03', name: 'דתק 3', latitude: 31.8180, longitude: 35.0980, aircraftType: 'transport', lastUpdated: createDate(2, 15, 25), updatedBy: updateUsers[5] },
+  // טייסת 202 - מטוסי סיור (recon) - בסיס תל נוף
+  { id: 'sh-09', squadronId: 'sq-04', name: 'דתק 1', latitude: 31.8280, longitude: 35.1020, aircraftType: 'recon', lastUpdated: createDate(1, 12, 0), updatedBy: updateUsers[2] },
+  { id: 'sh-10', squadronId: 'sq-04', name: 'דתק 2', latitude: 31.8240, longitude: 35.0980, aircraftType: 'recon', lastUpdated: createDate(0, 7, 45), updatedBy: updateUsers[0] },
   // טייסת 301 - מסוקים (helicopter)
-  { id: 'sh-11', squadronId: 'sq-05', name: 'דתק 1', latitude: 31.7815, longitude: 34.7125, aircraftType: 'helicopter', lastUpdated: createDate(2, 10, 15), updatedBy: updateUsers[3] },
-  { id: 'sh-12', squadronId: 'sq-05', name: 'דתק 2', latitude: 31.7805, longitude: 34.7115, aircraftType: 'helicopter', lastUpdated: createDate(1, 14, 30), updatedBy: updateUsers[4] },
+  { id: 'sh-11', squadronId: 'sq-05', name: 'דתק 1', latitude: 31.7860, longitude: 34.7170, aircraftType: 'helicopter', lastUpdated: createDate(2, 10, 15), updatedBy: updateUsers[3] },
+  { id: 'sh-12', squadronId: 'sq-05', name: 'דתק 2', latitude: 31.7780, longitude: 34.7090, aircraftType: 'helicopter', lastUpdated: createDate(1, 14, 30), updatedBy: updateUsers[4] },
   // טייסת 401 - מטוסי קרב (fighter) - טייסת נוספת
-  { id: 'sh-13', squadronId: 'sq-06', name: 'דתק 1', latitude: 30.6125, longitude: 34.8015, aircraftType: 'fighter', lastUpdated: createDate(0, 9, 0), updatedBy: updateUsers[5] },
-  { id: 'sh-14', squadronId: 'sq-06', name: 'דתק 2', latitude: 30.6115, longitude: 34.8005, aircraftType: 'fighter', lastUpdated: createDate(1, 11, 20), updatedBy: updateUsers[1] },
-  // טייסת 501 - מטוסי הפצצה (bomber) - טייסת נוספת
-  { id: 'sh-15', squadronId: 'sq-07', name: 'דתק 1', latitude: 32.7015, longitude: 35.1815, aircraftType: 'bomber', lastUpdated: createDate(2, 13, 0), updatedBy: updateUsers[2] },
-  { id: 'sh-16', squadronId: 'sq-07', name: 'דתק 2', latitude: 32.7005, longitude: 35.1805, aircraftType: 'bomber', lastUpdated: createDate(1, 15, 45), updatedBy: updateUsers[3] },
-  { id: 'sh-17', squadronId: 'sq-07', name: 'דתק 3', latitude: 32.7025, longitude: 35.1825, aircraftType: 'bomber', lastUpdated: createDate(0, 10, 10), updatedBy: updateUsers[4] },
-  // טייסת 502 - מסוקים (helicopter) - טייסת נוספת
-  { id: 'sh-18', squadronId: 'sq-08', name: 'דתק 1', latitude: 32.6995, longitude: 35.1795, aircraftType: 'helicopter', lastUpdated: createDate(1, 8, 15), updatedBy: updateUsers[5] },
-  { id: 'sh-19', squadronId: 'sq-08', name: 'דתק 2', latitude: 32.6985, longitude: 35.1785, aircraftType: 'helicopter', lastUpdated: createDate(2, 12, 30), updatedBy: updateUsers[0] },
-  // טייסת 103 - מטוסי קרב נוספים (fighter) - טייסת חדשה
-  { id: 'sh-20', squadronId: 'sq-09', name: 'דתק 1', latitude: 31.9275, longitude: 34.7165, aircraftType: 'fighter', lastUpdated: createDate(0, 11, 30), updatedBy: updateUsers[1] },
-  { id: 'sh-21', squadronId: 'sq-09', name: 'דתק 2', latitude: 31.9265, longitude: 34.7155, aircraftType: 'fighter', lastUpdated: createDate(1, 9, 45), updatedBy: updateUsers[2] },
-  // טייסת 203 - מטוסי תובלה נוספים (transport) - טייסת חדשה
-  { id: 'sh-22', squadronId: 'sq-10', name: 'דתק 1', latitude: 31.8175, longitude: 34.8855, aircraftType: 'transport', lastUpdated: createDate(0, 10, 15), updatedBy: updateUsers[3] },
-  { id: 'sh-23', squadronId: 'sq-10', name: 'דתק 2', latitude: 31.8165, longitude: 34.8845, aircraftType: 'transport', lastUpdated: createDate(1, 12, 20), updatedBy: updateUsers[4] },
+  { id: 'sh-13', squadronId: 'sq-06', name: 'דתק 1', latitude: 30.6170, longitude: 34.8060, aircraftType: 'fighter', lastUpdated: createDate(0, 9, 0), updatedBy: updateUsers[5] },
+  { id: 'sh-14', squadronId: 'sq-06', name: 'דתק 2', latitude: 30.6090, longitude: 34.7980, aircraftType: 'fighter', lastUpdated: createDate(1, 11, 20), updatedBy: updateUsers[1] },
+  // טייסת 501 - מטוסי הפצצה (bomber) - בסיס רמת דוד (32.70, 35.18)
+  { id: 'sh-15', squadronId: 'sq-07', name: 'דתק 1', latitude: 32.7040, longitude: 35.1840, aircraftType: 'bomber', lastUpdated: createDate(2, 13, 0), updatedBy: updateUsers[2] },
+  { id: 'sh-16', squadronId: 'sq-07', name: 'דתק 2', latitude: 32.7000, longitude: 35.1800, aircraftType: 'bomber', lastUpdated: createDate(1, 15, 45), updatedBy: updateUsers[3] },
+  { id: 'sh-17', squadronId: 'sq-07', name: 'דתק 3', latitude: 32.7080, longitude: 35.1880, aircraftType: 'bomber', lastUpdated: createDate(0, 10, 10), updatedBy: updateUsers[4] },
+  // טייסת 502 - מסוקים (helicopter) - בסיס רמת דוד
+  { id: 'sh-18', squadronId: 'sq-08', name: 'דתק 1', latitude: 32.7100, longitude: 35.1900, aircraftType: 'helicopter', lastUpdated: createDate(1, 8, 15), updatedBy: updateUsers[5] },
+  { id: 'sh-19', squadronId: 'sq-08', name: 'דתק 2', latitude: 32.7060, longitude: 35.1860, aircraftType: 'helicopter', lastUpdated: createDate(2, 12, 30), updatedBy: updateUsers[0] },
+  // טייסת 103 - מטוסי קרב נוספים (fighter) - בסיס פלמחים
+  { id: 'sh-20', squadronId: 'sq-09', name: 'דתק 1', latitude: 31.9380, longitude: 34.7200, aircraftType: 'fighter', lastUpdated: createDate(0, 11, 30), updatedBy: updateUsers[1] },
+  { id: 'sh-21', squadronId: 'sq-09', name: 'דתק 2', latitude: 31.9340, longitude: 34.7160, aircraftType: 'fighter', lastUpdated: createDate(1, 9, 45), updatedBy: updateUsers[2] },
+  // טייסת 203 - מטוסי תובלה נוספים (transport) - בסיס תל נוף
+  { id: 'sh-22', squadronId: 'sq-10', name: 'דתק 1', latitude: 31.8160, longitude: 35.0960, aircraftType: 'transport', lastUpdated: createDate(0, 10, 15), updatedBy: updateUsers[3] },
+  { id: 'sh-23', squadronId: 'sq-10', name: 'דתק 2', latitude: 31.8120, longitude: 35.0920, aircraftType: 'transport', lastUpdated: createDate(1, 12, 20), updatedBy: updateUsers[4] },
 ];
 
 // כיפות - כל דתק יש לו כיפות (ממוקמות סביב הדתק)
@@ -201,8 +202,8 @@ export const samplePositions: Position[] = [
   { id: 'pos-p1', baseId: 'base-01', name: 'רמפה פלמחים 1', latitude: 31.931, longitude: 34.723, type: 'apron', capacity: 3 },
   { id: 'pos-p2', baseId: 'base-01', name: 'האגר פלמחים 2', latitude: 31.929, longitude: 34.718, type: 'hangar', capacity: 2 },
   // תל נוף
-  { id: 'pos-t1', baseId: 'base-02', name: 'רמפה תל נוף 1', latitude: 31.821, longitude: 34.893, type: 'apron', capacity: 3 },
-  { id: 'pos-t2', baseId: 'base-02', name: 'האגר תל נוף 2', latitude: 31.819, longitude: 34.885, type: 'hangar', capacity: 4 },
+  { id: 'pos-t1', baseId: 'base-02', name: 'רמפה תל נוף 1', latitude: 31.821, longitude: 35.103, type: 'apron', capacity: 3 },
+  { id: 'pos-t2', baseId: 'base-02', name: 'האגר תל נוף 2', latitude: 31.819, longitude: 35.095, type: 'hangar', capacity: 4 },
   // גן יבנה
   { id: 'pos-g1', baseId: 'base-03', name: 'רמפה גן יבנה 1', latitude: 31.781, longitude: 34.713, type: 'apron', capacity: 2 },
   { id: 'pos-g2', baseId: 'base-03', name: 'האגר גן יבנה 2', latitude: 31.779, longitude: 34.707, type: 'hangar', capacity: 2 },
@@ -219,8 +220,12 @@ export const sampleAircraft: Aircraft[] = [
   // דתק 1 של טייסת 101 (sh-01) - dome-01 עד dome-04 - מטוסי קרב
   { id: 'plane-001', type: 'fighter', callsign: 'TFA-001', size: 'small', status: 'assigned', location: 'ground', assignedPositionId: null, assignedDomeId: 'dome-01', lastStatusUpdate: createDate(0, 8, 15), lastStatusUpdatedBy: updateUsers[0] },
   { id: 'plane-002', type: 'fighter', callsign: 'TFA-002', size: 'small', status: 'assigned', location: 'air', assignedPositionId: null, assignedDomeId: 'dome-02', lastStatusUpdate: createDate(0, 7, 30), lastStatusUpdatedBy: updateUsers[1] },
+  // מטוסים שמוקצים לכיפות ריקות - נחשבים באוויר
+  { id: 'plane-021', type: 'fighter', callsign: 'TFA-007', size: 'small', status: 'assigned', location: 'ground', assignedPositionId: null, assignedDomeId: 'dome-03', lastStatusUpdate: createDate(1, 10, 0), lastStatusUpdatedBy: updateUsers[1] }, // כיפה ריקה - נחשב באוויר
+  { id: 'plane-022', type: 'fighter', callsign: 'TFA-008', size: 'small', status: 'assigned', location: 'ground', assignedPositionId: null, assignedDomeId: 'dome-04', lastStatusUpdate: createDate(2, 14, 30), lastStatusUpdatedBy: updateUsers[2] }, // כיפה ריקה - נחשב באוויר
   // דתק 2 של טייסת 101 (sh-02) - dome-05 עד dome-07 - מטוסי קרב
   { id: 'plane-003', type: 'fighter', callsign: 'TFA-003', size: 'small', status: 'assigned', location: 'ground', assignedPositionId: null, assignedDomeId: 'dome-05', lastStatusUpdate: createDate(0, 9, 0), lastStatusUpdatedBy: updateUsers[2] },
+  { id: 'plane-023', type: 'fighter', callsign: 'TFA-009', size: 'small', status: 'assigned', location: 'ground', assignedPositionId: null, assignedDomeId: 'dome-06', lastStatusUpdate: createDate(1, 11, 15), lastStatusUpdatedBy: updateUsers[3] }, // כיפה ריקה - נחשב באוויר
   // דתק 1 של טייסת 102 (sh-04) - dome-12 עד dome-14 - מטוסי הפצצה
   { id: 'plane-004', type: 'bomber', callsign: 'TBB-001', size: 'large', status: 'assigned', location: 'air', assignedPositionId: null, assignedDomeId: 'dome-12', lastStatusUpdate: createDate(0, 6, 45), lastStatusUpdatedBy: updateUsers[3] },
   // דתק 1 של טייסת 201 (sh-06) - dome-19 עד dome-22 - מטוסי תובלה

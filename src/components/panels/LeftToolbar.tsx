@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { 
   Plane, 
   Layers,
-  ChevronDown
+  ChevronDown,
+  Map,
+  List
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +20,12 @@ import { useSimulationStore } from '@/hooks/useSimulationStore';
 import { cn } from '@/lib/utils';
 import { Aircraft } from '@/types/simulation';
 
-export const LeftToolbar = () => {
+interface LeftToolbarProps {
+  viewMode: 'map' | 'list';
+  onViewModeChange: (mode: 'map' | 'list') => void;
+}
+
+export const LeftToolbar = ({ viewMode, onViewModeChange }: LeftToolbarProps) => {
   const {
     tileLayerUrl,
     setTileLayerUrl,
@@ -40,25 +47,68 @@ export const LeftToolbar = () => {
   const isAdmin = currentUser?.role === 'admin';
   
   // Calculate aircraft by category
-  // אם אין מטוס בכיפה, הוא נחשב באוויר
-  const allAircraft = aircraft;
+  // לכל כיפה אמור להיות מטוס - אם כיפה ריקה, המטוס שהיה אמור להיות שם נחשב באוויר או חשוד
+  // מצא כיפות ריקות שאין להן מטוס שמוקצה אליהן
+  const emptyDomesWithoutAircraft = domes.filter(d => {
+    if (d.aircraftId !== null) return false; // כיפה תפוסה
+    // בדוק אם יש מטוס שמוקצה לכיפה הזו
+    const assignedAircraft = aircraft.find(a => a.assignedDomeId === d.id);
+    return !assignedAircraft; // אין מטוס שמוקצה לכיפה הזו
+  });
+  
+  // כל המטוסים = כל המטוסים ב-array + כיפות ריקות ללא מטוס (וירטואליים)
+  // זה כולל: מטוסים באוויר, מטוסים בקרקע, מטוסים חשודים, וכיפות ריקות
+  const allAircraftCount = aircraft.length + emptyDomesWithoutAircraft.length;
+  const allAircraft = aircraft; // עבור הרשימה, נשתמש רק במטוסים הקיימים
   const suspiciousAircraft = aircraft.filter(a => a.locationUncertain === true);
   
-  // מטוסים באוויר: location === 'air' או שאין להם כיפה מוקצית (assignedDomeId === null)
-  // אם אין מטוס בכיפה, הוא נחשב באוויר
-  const aircraftInAir = aircraft.filter(a => 
-    !a.locationUncertain && (
-      a.location === 'air' || 
-      a.assignedDomeId === null
-    )
-  );
+  // מטוסים באוויר: 
+  // 1. location === 'air' ו-!locationUncertain (גם אם יש assignedDomeId והכיפה תפוסה)
+  // 2. יש assignedDomeId אבל הכיפה ריקה (dome.aircraftId === null) - נחשב באוויר (גם אם location === 'ground')
+  // 3. יש assignedDomeId אבל הכיפה מכילה מטוס אחר (dome.aircraftId !== a.id) - נחשב באוויר
+  const aircraftInAir = aircraft.filter(a => {
+    if (a.locationUncertain) return false; // מטוסים חשודים לא נכללים כאן
+    
+    // אם המטוס לא מוקצה לכיפה, בודקים לפי location
+    if (a.assignedDomeId === null) {
+      return a.location === 'air';
+    }
+    
+    // אם המטוס מוקצה לכיפה, בודקים את מצב הכיפה
+    const dome = domes.find(d => d.id === a.assignedDomeId);
+    if (!dome) {
+      // אם הכיפה לא קיימת, בודקים לפי location
+      return a.location === 'air';
+    }
+    
+    // אם הכיפה ריקה, המטוס באוויר (גם אם location === 'ground')
+    if (dome.aircraftId === null) return true;
+    
+    // אם הכיפה מכילה מטוס אחר, המטוס הזה לא על הקרקע
+    if (dome.aircraftId !== a.id) return true;
+    
+    // אם הכיפה מכילה את המטוס הזה, בודקים לפי location
+    return a.location === 'air';
+  });
   
-  // מטוסים על הקרקע: location === 'ground' ויש להם כיפה מוקצית
-  const aircraftOnGround = aircraft.filter(a => 
-    !a.locationUncertain && 
-    a.location === 'ground' && 
-    a.assignedDomeId !== null
-  );
+  // המספר הסופי של מטוסים באוויר = מטוסים באוויר + כיפות ריקות ללא מטוס
+  // זה מסתנכרן עם ListView שסופר כיפות ריקות
+  const totalAircraftInAir = aircraftInAir.length + emptyDomesWithoutAircraft.length;
+  
+  // מטוסים על הקרקע: 
+  // כל מטוס שהכיפה שלו מכילה אותו (dome.aircraftId === a.id)
+  // זה מסתנכרן עם ListView שסופר כיפות תפוסות
+  const aircraftOnGround = aircraft.filter(a => {
+    if (a.locationUncertain) return false; // מטוסים חשודים לא נכללים כאן
+    if (a.assignedDomeId === null) return false;
+    
+    // בודקים אם הכיפה באמת מכילה את המטוס
+    const dome = domes.find(d => d.id === a.assignedDomeId);
+    if (!dome) return false;
+    
+    // אם הכיפה מכילה את המטוס הזה, הוא על הקרקע (לא משנה מה ה-location שלו)
+    return dome.aircraftId === a.id;
+  });
   
   // Get filtered aircraft list based on current filter
   const getFilteredAircraft = (): Aircraft[] => {
@@ -67,6 +117,7 @@ export const LeftToolbar = () => {
     } else if (aircraftFilter === 'suspicious') {
       return suspiciousAircraft;
     } else if (aircraftFilter === 'air') {
+      // החזר את כל המטוסים באוויר
       return aircraftInAir;
     } else if (aircraftFilter === 'ground') {
       return aircraftOnGround;
@@ -119,11 +170,32 @@ export const LeftToolbar = () => {
           <Plane className="w-5 h-5 text-primary" />
           <h1 className="font-semibold text-foreground">סימולטור מטוסים</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-3">
           <Badge variant={currentUser?.role === 'admin' ? 'tactical' : 'muted'}>
             {currentUser?.role || 'guest'}
           </Badge>
           <span className="text-xs text-muted-foreground">{currentUser?.username}</span>
+        </div>
+        {/* View Mode Toggle */}
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === 'map' ? 'tactical' : 'outline'}
+            size="sm"
+            onClick={() => onViewModeChange('map')}
+            className="flex-1"
+          >
+            <Map className="w-4 h-4 mr-2" />
+            מפה
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'tactical' : 'outline'}
+            size="sm"
+            onClick={() => onViewModeChange('list')}
+            className="flex-1"
+          >
+            <List className="w-4 h-4 mr-2" />
+            רשימה
+          </Button>
         </div>
       </div>
 
@@ -131,15 +203,15 @@ export const LeftToolbar = () => {
       <div className="p-4 border-b border-border">
         <div className="panel-header">סטטוס</div>
         <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => setAircraftFilter('all')}
-            className={`bg-secondary hover:bg-secondary/80 rounded-md p-2 text-center cursor-pointer transition-colors ${
-              aircraftFilter === 'all' ? 'ring-2 ring-primary' : ''
-            }`}
-          >
-            <div className="text-xl font-mono font-bold text-primary">{allAircraft.length}</div>
-            <div className="text-xs text-muted-foreground">כל המטוסים</div>
-          </button>
+                 <button
+                   onClick={() => setAircraftFilter('all')}
+                   className={`bg-secondary hover:bg-secondary/80 rounded-md p-2 text-center cursor-pointer transition-colors ${
+                     aircraftFilter === 'all' ? 'ring-2 ring-primary' : ''
+                   }`}
+                 >
+                   <div className="text-xl font-mono font-bold text-primary">{allAircraftCount}</div>
+                   <div className="text-xs text-muted-foreground">כל המטוסים</div>
+                 </button>
           <button
             onClick={() => setAircraftFilter('suspicious')}
             className={`bg-secondary hover:bg-secondary/80 rounded-md p-2 text-center cursor-pointer transition-colors ${
@@ -155,7 +227,7 @@ export const LeftToolbar = () => {
               aircraftFilter === 'air' ? 'ring-2 ring-blue-500' : ''
             }`}
           >
-            <div className="text-xl font-mono font-bold text-blue-500">{aircraftInAir.length}</div>
+            <div className="text-xl font-mono font-bold text-blue-500">{totalAircraftInAir}</div>
             <div className="text-xs text-muted-foreground">באוויר</div>
           </button>
           <button
