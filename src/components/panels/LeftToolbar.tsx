@@ -305,11 +305,6 @@ export const LeftToolbar = ({ viewMode, onViewModeChange }: LeftToolbarProps) =>
                           )}
                         </div>
                       )}
-                      {isDraggable && (
-                        <div className="text-xs text-blue-500 mt-2 font-medium">
-                          💡 גרור למפה לעדכון מיקום
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
