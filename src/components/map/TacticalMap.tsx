@@ -670,11 +670,6 @@ export const TacticalMap = () => {
                 ` : ''}
               </div>
             ` : ''}
-            ${isDraggable ? `
-              <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #333;">
-                <div style="font-size: 10px; color: #0ea5e9;">💡 גרור לעדכון מיקום</div>
-              </div>
-            ` : ''}
           </div>
         `);
 
