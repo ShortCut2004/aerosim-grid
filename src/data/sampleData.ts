@@ -24,7 +24,7 @@ const updateUsers: UpdateInfo[] = [
 export const sampleBases: Base[] = [
   { id: 'base-01', name: 'פלמחים', latitude: 31.93, longitude: 34.72, capacity: 12, metadata: { region: 'Test Region A', status: 'active' } },
   { id: 'base-02', name: 'תל נוף', latitude: 31.82, longitude: 35.1, capacity: 10, metadata: { region: 'Test Region A', status: 'active' } },
-  { id: 'base-03', name: 'גן יבנה', latitude: 31.78, longitude: 34.71, capacity: 8, metadata: { region: 'Test Region A', status: 'active' } },
+  { id: 'base-03', name: 'חצור', latitude: 31.78, longitude: 34.71, capacity: 8, metadata: { region: 'Test Region A', status: 'active' } },
   { id: 'base-04', name: 'מצפה רמון', latitude: 30.61, longitude: 34.80, capacity: 6, metadata: { region: 'Test Region A', status: 'active' } },
   { id: 'base-05', name: 'רמת דוד', latitude: 32.70, longitude: 35.18, capacity: 14, metadata: { region: 'Test Region A', status: 'active' } },
 ];
@@ -37,7 +37,7 @@ export const sampleSquadrons: Squadron[] = [
   // תל נוף
   { id: 'sq-03', baseId: 'base-02', name: 'טייסת 201', latitude: 31.821, longitude: 35.101 },
   { id: 'sq-04', baseId: 'base-02', name: 'טייסת 202', latitude: 31.819, longitude: 35.097 },
-  // גן יבנה
+  // חצור
   { id: 'sq-05', baseId: 'base-03', name: 'טייסת 301', latitude: 31.781, longitude: 34.712 },
   // מצפה רמון
   { id: 'sq-06', baseId: 'base-04', name: 'טייסת 401', latitude: 30.612, longitude: 34.801 },
@@ -204,9 +204,9 @@ export const samplePositions: Position[] = [
   // תל נוף
   { id: 'pos-t1', baseId: 'base-02', name: 'רמפה תל נוף 1', latitude: 31.821, longitude: 35.103, type: 'apron', capacity: 3 },
   { id: 'pos-t2', baseId: 'base-02', name: 'האגר תל נוף 2', latitude: 31.819, longitude: 35.095, type: 'hangar', capacity: 4 },
-  // גן יבנה
-  { id: 'pos-g1', baseId: 'base-03', name: 'רמפה גן יבנה 1', latitude: 31.781, longitude: 34.713, type: 'apron', capacity: 2 },
-  { id: 'pos-g2', baseId: 'base-03', name: 'האגר גן יבנה 2', latitude: 31.779, longitude: 34.707, type: 'hangar', capacity: 2 },
+  // חצור
+  { id: 'pos-g1', baseId: 'base-03', name: 'רמפה חצור 1', latitude: 31.781, longitude: 34.713, type: 'apron', capacity: 2 },
+  { id: 'pos-g2', baseId: 'base-03', name: 'האגר חצור 2', latitude: 31.779, longitude: 34.707, type: 'hangar', capacity: 2 },
   // מצפה רמון
   { id: 'pos-m1', baseId: 'base-04', name: 'רמפה מצפה רמון 1', latitude: 30.612, longitude: 34.803, type: 'apron', capacity: 2 },
   { id: 'pos-m2', baseId: 'base-04', name: 'האגר מצפה רמון 2', latitude: 30.608, longitude: 34.798, type: 'hangar', capacity: 2 },
