@@ -45,6 +45,7 @@ interface SimulationState {
   updateAircraft: (aircraft: Aircraft[]) => void;
   updatePositions: (positions: Position[]) => void;
   updateAircraftLocation: (aircraftId: string, lat: number, lon: number, location: 'ground' | 'air') => void;
+  markAircraftAsSuspicious: (aircraftId: string, reason: string) => void;
   
   // Computed
   getPositionOccupancy: (positionId: string) => number;
@@ -284,6 +285,26 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
               homeLatitude: lat,
               homeLongitude: lon,
               lastStatusUpdate: new Date(),
+            }
+          : a
+      )
+    }));
+  },
+  
+  markAircraftAsSuspicious: (aircraftId, reason) => {
+    set((state) => ({
+      aircraft: state.aircraft.map(a =>
+        a.id === aircraftId
+          ? {
+              ...a,
+              locationUncertain: true,
+              suspicionReason: reason,
+              lastStatusUpdate: new Date(),
+              lastStatusUpdatedBy: state.currentUser ? {
+                name: state.currentUser.username,
+                personalNumber: 'N/A',
+                phone: 'N/A'
+              } : undefined,
             }
           : a
       )
