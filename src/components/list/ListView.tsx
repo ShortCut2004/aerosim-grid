@@ -234,7 +234,7 @@ export const ListView = () => {
 
       const popupContent = `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-width: 250px; direction: rtl;">
-          <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #000000;">${base.name}</div>
+          <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; color: white;">${base.name}</div>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px;">
             <div style="background: #e5e7eb; padding: 8px; border-radius: 6px; text-align: center;">
               <div style="font-size: 20px; font-weight: bold; color: #374151;">${emptyDomes}</div>
