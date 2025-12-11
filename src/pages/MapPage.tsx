@@ -1,22 +1,26 @@
+import { useState } from 'react';
 import { TacticalMap } from '@/components/map/TacticalMap';
+import { ListView } from '@/components/list/ListView';
 import { LeftToolbar } from '@/components/panels/LeftToolbar';
-import { RightSidePanel } from '@/components/panels/RightSidePanel';
 
 const MapPage = () => {
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-background">
       {/* Main Content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left Toolbar */}
-        <LeftToolbar />
+        <LeftToolbar viewMode={viewMode} onViewModeChange={setViewMode} />
 
-        {/* Map Area */}
+        {/* Map or List Area */}
         <div className="flex-1 relative min-h-[400px]">
-          <TacticalMap />
+          {viewMode === 'map' ? (
+            <TacticalMap />
+          ) : (
+            <ListView />
+          )}
         </div>
-
-        {/* Right Side Panel */}
-        <RightSidePanel />
       </div>
     </div>
   );
