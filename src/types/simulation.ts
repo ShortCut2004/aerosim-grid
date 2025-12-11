@@ -63,6 +63,8 @@ export interface Aircraft {
   locationUncertain?: boolean; // האם מיקום המטוס לא מעודכן (חשוד)
   uncertainLatitude?: number; // קואורדינטה לא ודאית (אם locationUncertain = true)
   uncertainLongitude?: number; // קואורדינטה לא ודאית (אם locationUncertain = true)
+  suspicionReason?: string; // סיבה לסימון המטוס כחשוד
+  protected: 'full' | 'partial' | 'none'; // רמת מיגון
   assignedPositionId: string | null;
   assignedDomeId: string | null; // כיפה מוקצית
   homeLatitude?: number;

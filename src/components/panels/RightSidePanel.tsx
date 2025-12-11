@@ -11,6 +11,8 @@ export const RightSidePanel = () => {
   const {
     positions,
     bases,
+    squadrons,
+    shelters,
     selectedPositionId,
     selectPosition,
     getAssignedAircraft,
@@ -20,9 +22,9 @@ export const RightSidePanel = () => {
     getUnassignedAircraft,
     assignAircraft,
   } = useSimulationStore();
-  
+
   const handleBaseClick = (baseId: string) => {
-    zoomToBase(baseId, bases);
+    zoomToBase(baseId, bases, shelters, squadrons);
   };
 
   const selectedPosition = positions.find((p) => p.id === selectedPositionId);

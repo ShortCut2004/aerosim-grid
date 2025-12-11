@@ -291,6 +291,12 @@ export const LeftToolbar = ({ viewMode, onViewModeChange }: LeftToolbarProps) =>
                         <span className="font-medium">מיקום:</span>{' '}
                         {isSuspicious ? 'לא ידוע' : getAircraftLocation(aircraft)}
                       </div>
+                      {isSuspicious && aircraft.suspicionReason && (
+                        <div className="mt-2 p-2 bg-red-100 dark:bg-red-950/30 rounded border border-red-300 dark:border-red-800">
+                          <div className="font-medium text-red-700 dark:text-red-400 mb-1">סיבה לחשד:</div>
+                          <div className="text-xs text-red-600 dark:text-red-300">{aircraft.suspicionReason}</div>
+                        </div>
+                      )}
                       {aircraft.lastStatusUpdate && (
                         <div>
                           <span className="font-medium">עדכון אחרון:</span>{' '}

@@ -1,8 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useSimulationStore } from '@/hooks/useSimulationStore';
 import type { Aircraft } from '@/types/simulation';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+
+// Import logos
+import palmachimLogo from '@/assets/logos/פלמחים.png';
+import telNofLogo from '@/assets/logos/IAF_Bacha_8_Tel_Nof_AFB_Emblem.png';
+import ramatDavidLogo from '@/assets/logos/Kanaf_1_ramat-david.png';
+import ramonLogo from '@/assets/logos/רמון.png';
+import hatzorLogo from '@/assets/logos/חצור.png';
+import airForceLogo from '@/assets/logos/IAF_New_Logo_2018.png';
 
 // Fix default marker icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -65,7 +77,55 @@ const createPositionIcon = (occupancy: number, capacity: number, isSelected: boo
   });
 };
 
+// פונקציה ליצירת לוגו בסיס - משתמש בתמונות
+const getBaseLogoUrl = (name: string): string => {
+  const logoMap: Record<string, string> = {
+    'פלמחים': palmachimLogo,
+    'תל נוף': telNofLogo,
+    'רמת דוד': ramatDavidLogo,
+    'מצפה רמון': ramonLogo,
+    'חצור': hatzorLogo,
+    'גן יבנה': hatzorLogo, // גן יבנה זה חצור
+  };
+  
+  return logoMap[name] || '';
+};
+
 const createBaseIcon = (name: string) => {
+  const logoUrl = getBaseLogoUrl(name);
+  
+  // אם יש תמונה, משתמש בה
+  if (logoUrl) {
+    return L.divIcon({
+      html: `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.95);
+          border-radius: 8px;
+          padding: 4px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          min-width: 50px;
+        ">
+          <img src="${logoUrl}" alt="${name}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 50px;" />
+          <div style="
+            font-weight: bold;
+            font-size: 9px;
+            color: #000000;
+            white-space: nowrap;
+            margin-top: 2px;
+          ">${name}</div>
+        </div>
+      `,
+      className: 'custom-base-marker',
+      iconSize: [60, 50],
+      iconAnchor: [30, 25],
+    });
+  }
+  
+  // אחרת, לוגו ברירת מחדל
   return L.divIcon({
     html: `<div style="padding:4px 8px;background:rgba(15,23,42,0.9);border:2px solid #f59e0b;border-radius:4px;font-size:11px;font-weight:600;color:#f59e0b;white-space:nowrap;box-shadow:0 0 15px rgba(245,158,11,0.3);">${name}</div>`,
     className: 'custom-base-marker',
@@ -114,11 +174,12 @@ const createShelterIcon = (name: string) => {
   });
 };
 
-const createDomeIcon = (hasAircraft: boolean, aircraftCallsign?: string) => {
+const createDomeIcon = (hasAircraft: boolean, isSuspicious: boolean = false, aircraftCallsign?: string) => {
   const width = 40;
   const height = 40;
-  const bgColor = hasAircraft ? '#22c55e' : '#6b7280'; // ירוק אם יש מטוס, אפור אם אין
-  const borderColor = hasAircraft ? '#16a34a' : '#4b5563';
+  // אדום אם מטוס חשוד, ירוק אם יש מטוס רגיל, אפור אם אין מטוס
+  const bgColor = isSuspicious ? '#ef4444' : hasAircraft ? '#22c55e' : '#6b7280';
+  const borderColor = isSuspicious ? '#dc2626' : hasAircraft ? '#16a34a' : '#4b5563';
   
   const html = `
     <div style="
@@ -184,11 +245,31 @@ const calculateDomePositions = (
 // Global map reference for zooming from other components
 let globalMapRef: L.Map | null = null;
 
-export const zoomToBase = (baseId: string, bases: Array<{ id: string; latitude: number; longitude: number }>) => {
+export const zoomToBase = (baseId: string, bases: Array<{ id: string; latitude: number; longitude: number }>, shelters?: Array<{ id: string; squadronId: string; latitude: number; longitude: number }>, squadrons?: Array<{ id: string; baseId: string }>) => {
   if (!globalMapRef) return;
   const base = bases.find(b => b.id === baseId);
   if (base) {
-    globalMapRef.setView([base.latitude, base.longitude], 15);
+    // אם יש shelters ו-squadrons, נחשב את ה-bounds של כל הדתקים
+    if (shelters && squadrons) {
+      const baseSquadrons = squadrons.filter(sq => sq.baseId === baseId);
+      const baseShelters = shelters.filter(sh => baseSquadrons.some(sq => sq.id === sh.squadronId));
+      
+      if (baseShelters.length > 0) {
+        // חישוב bounds לכל הדתקים
+        const lats = baseShelters.map(sh => sh.latitude);
+        const lons = baseShelters.map(sh => sh.longitude);
+        const bounds = L.latLngBounds(
+          [Math.min(...lats), Math.min(...lons)],
+          [Math.max(...lats), Math.max(...lons)]
+        );
+        // fitBounds עם padding כדי שכל הדתקים יהיו נראים
+        globalMapRef.fitBounds(bounds, { padding: [150, 150] });
+      } else {
+        globalMapRef.setView([base.latitude, base.longitude], 15);
+      }
+    } else {
+      globalMapRef.setView([base.latitude, base.longitude], 15);
+    }
   }
 };
 
@@ -197,6 +278,18 @@ export const TacticalMap = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const planeMarkersRef = useRef<L.Marker[]>([]);
   const [zoomLevel, setZoomLevel] = useState<number>(9);
+  const [suspicionModalOpen, setSuspicionModalOpen] = useState(false);
+  const [selectedAircraftForSuspicion, setSelectedAircraftForSuspicion] = useState<{ id: string; callsign: string } | null>(null);
+  const [suspicionReason, setSuspicionReason] = useState('');
+  
+  // Store state setters in refs so they can be accessed in event handlers
+  const setSuspicionModalOpenRef = useRef(setSuspicionModalOpen);
+  const setSelectedAircraftForSuspicionRef = useRef(setSelectedAircraftForSuspicion);
+  
+  useEffect(() => {
+    setSuspicionModalOpenRef.current = setSuspicionModalOpen;
+    setSelectedAircraftForSuspicionRef.current = setSelectedAircraftForSuspicion;
+  }, []);
   
   const {
     bases,
@@ -211,7 +304,28 @@ export const TacticalMap = () => {
     getPositionOccupancy,
     aircraftFilter,
     updateAircraftLocation,
+    markAircraftAsSuspicious,
   } = useSimulationStore();
+  
+  // Listen for custom event to open suspicion modal
+  useEffect(() => {
+    const handleOpenSuspicionModal = (e: Event) => {
+      const customEvent = e as CustomEvent<{ id: string; callsign: string }>;
+      if (customEvent.detail) {
+        console.log('Opening suspicion modal for:', customEvent.detail); // Debug log
+        setSelectedAircraftForSuspicion({
+          id: customEvent.detail.id,
+          callsign: customEvent.detail.callsign
+        });
+        setSuspicionModalOpen(true);
+      }
+    };
+    
+    window.addEventListener('openSuspicionModal', handleOpenSuspicionModal);
+    return () => {
+      window.removeEventListener('openSuspicionModal', handleOpenSuspicionModal);
+    };
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -386,15 +500,15 @@ export const TacticalMap = () => {
         const centerLat = (minLat + maxLat) / 2;
         const centerLon = (minLon + maxLon) / 2;
         
-        // Create rectangle polygon around all domes (this is the shelter boundary)
+        // Create rectangle polygon around all domes (this is the shelter boundary) - מלבן שחור
         const shelterBoundary = L.rectangle(
           [[minLat, minLon], [maxLat, maxLon]],
           {
-            color: '#3b82f6',
-            weight: 2.5,
-            fillColor: 'rgba(59, 130, 246, 0.08)',
-            fillOpacity: 0.2,
-            dashArray: '10, 5',
+            color: '#000000',
+            weight: 3,
+            fillColor: 'rgba(0, 0, 0, 0.1)',
+            fillOpacity: 0.15,
+            dashArray: '8, 4',
             className: 'shelter-boundary',
           }
         ).addTo(mapRef.current!);
@@ -464,47 +578,120 @@ export const TacticalMap = () => {
         shelterDomes.forEach((dome, index) => {
           const hasAircraft = dome.aircraftId !== null;
           const aircraftData = hasAircraft ? aircraft.find(a => a.id === dome.aircraftId) : null;
+          const isSuspicious = aircraftData?.locationUncertain === true;
           
           // Use calculated position
           const [domeLat, domeLon] = domePositions[index];
           
           const domeMarker = L.marker([domeLat, domeLon], {
-            icon: createDomeIcon(hasAircraft, aircraftData?.callsign),
+            icon: createDomeIcon(hasAircraft, isSuspicious, aircraftData?.callsign),
           }).addTo(mapRef.current!);
 
           // Create popup with dome info
-          domeMarker.bindPopup(`
-            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; min-width: 200px;">
-              <div style="font-weight: bold; margin-bottom: 4px; color: #f59e0b;">${dome.name}</div>
-              <div style="font-size: 11px; margin-bottom: 2px;">דתק: ${shelter.name}</div>
-              ${squadron ? `<div style="font-size: 11px; margin-bottom: 2px;">טייסת: ${squadron.name}</div>` : ''}
-              ${base ? `<div style="font-size: 11px; margin-bottom: 4px;">בסיס: ${base.name}</div>` : ''}
-              <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #333;">
-                <div style="font-weight: bold; margin-bottom: 2px;">סטטוס:</div>
-                ${hasAircraft && aircraftData ? `
-                  <div style="font-size: 10px; color: #22c55e;">✓ יש מטוס</div>
-                  <div style="font-size: 10px; margin-top: 2px;">סימן קריאה: ${aircraftData.callsign}</div>
-                  <div style="font-size: 10px;">סוג: ${aircraftData.type}</div>
-                ` : `
-                  <div style="font-size: 10px; color: #6b7280;">○ אין מטוס</div>
-                `}
-              </div>
-              ${dome.lastUpdated ? `
-                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #333;">
-                  <div style="font-weight: bold; font-size: 10px; margin-bottom: 2px;">עדכון אחרון:</div>
-                  <div style="font-size: 10px; margin-bottom: 2px;">תאריך ושעה: ${formatDate(dome.lastUpdated)}</div>
-                  ${dome.updatedBy ? `
-                    <div style="font-size: 10px; margin-top: 4px;">
-                      <div style="font-weight: bold; margin-bottom: 2px;">מי עדכן:</div>
-                      <div style="font-size: 9px;">שם: ${dome.updatedBy.name}</div>
-                      <div style="font-size: 9px;">מספר אישי: ${dome.updatedBy.personalNumber}</div>
-                      <div style="font-size: 9px;">טלפון: ${dome.updatedBy.phone}</div>
-                    </div>
-                  ` : ''}
+          const popupDiv = document.createElement('div');
+          popupDiv.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+          popupDiv.style.fontSize = '12px';
+          popupDiv.style.minWidth = '200px';
+          popupDiv.style.direction = 'rtl';
+          
+          popupDiv.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 4px; color: #f59e0b;">${dome.name}</div>
+            <div style="font-size: 11px; margin-bottom: 2px;">דתק: ${shelter.name}</div>
+            ${squadron ? `<div style="font-size: 11px; margin-bottom: 2px;">טייסת: ${squadron.name}</div>` : ''}
+            ${base ? `<div style="font-size: 11px; margin-bottom: 4px;">בסיס: ${base.name}</div>` : ''}
+            <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #333;">
+              <div style="font-weight: bold; margin-bottom: 2px;">סטטוס:</div>
+              ${hasAircraft && aircraftData ? `
+                <div style="font-size: 10px; color: ${isSuspicious ? '#ef4444' : '#22c55e'};">
+                  ${isSuspicious ? '⚠ מטוס חשוד' : '✓ יש מטוס'}
                 </div>
-              ` : ''}
+                <div style="font-size: 10px; margin-top: 2px;">סימן קריאה: ${aircraftData.callsign}</div>
+                <div style="font-size: 10px;">סוג: ${aircraftData.type}</div>
+                ${isSuspicious && aircraftData.suspicionReason ? `
+                  <div style="font-size: 10px; margin-top: 4px; color: #ef4444;">
+                    <div style="font-weight: bold;">סיבה לחשד:</div>
+                    <div>${aircraftData.suspicionReason}</div>
+                  </div>
+                ` : ''}
+              ` : `
+                <div style="font-size: 10px; color: #6b7280;">○ אין מטוס</div>
+              `}
             </div>
-          `);
+            ${dome.lastUpdated ? `
+              <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #333;">
+                <div style="font-weight: bold; font-size: 10px; margin-bottom: 2px;">עדכון אחרון:</div>
+                <div style="font-size: 10px; margin-bottom: 2px;">תאריך ושעה: ${formatDate(dome.lastUpdated)}</div>
+                ${dome.updatedBy ? `
+                  <div style="font-size: 10px; margin-top: 4px;">
+                    <div style="font-weight: bold; margin-bottom: 2px;">מי עדכן:</div>
+                    <div style="font-size: 9px;">שם: ${dome.updatedBy.name}</div>
+                    <div style="font-size: 9px;">מספר אישי: ${dome.updatedBy.personalNumber}</div>
+                    <div style="font-size: 9px;">טלפון: ${dome.updatedBy.phone}</div>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+            ${hasAircraft && aircraftData && !isSuspicious ? `
+              <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #333;">
+                <button id="mark-suspicious-btn-${dome.aircraftId}" style="
+                  width: 100%;
+                  padding: 6px 12px;
+                  background: #ef4444;
+                  color: white;
+                  border: none;
+                  border-radius: 4px;
+                  font-size: 11px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  transition: background 0.2s;
+                ">סימון מטוס כחשוד</button>
+              </div>
+            ` : ''}
+          `;
+          
+          domeMarker.bindPopup(popupDiv);
+          
+          // Add click handler for mark suspicious button AFTER binding popup
+          if (hasAircraft && aircraftData && !isSuspicious) {
+            // Store aircraft data in closure
+            const aircraftId = aircraftData.id;
+            const aircraftCallsign = aircraftData.callsign;
+            
+            // Use popupopen event to attach handler when popup opens
+            domeMarker.on('popupopen', () => {
+              // Wait for DOM to be ready
+              setTimeout(() => {
+                // Try to find button in the popup content (Leaflet might clone the element)
+                const popupContent = domeMarker.getPopup()?.getContent();
+                const popupElement = typeof popupContent === 'string' 
+                  ? document.querySelector('.leaflet-popup-content') 
+                  : popupContent as HTMLElement;
+                
+                const button = popupElement?.querySelector(`#mark-suspicious-btn-${dome.aircraftId}`) as HTMLButtonElement;
+                if (button) {
+                  // Remove any existing handler
+                  button.onclick = null;
+                  
+                  // Add new handler using window event to access React state
+                  button.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Button clicked! Aircraft:', { id: aircraftId, callsign: aircraftCallsign });
+                    // Dispatch custom event that React can listen to
+                    const event = new CustomEvent('openSuspicionModal', {
+                      detail: { id: aircraftId, callsign: aircraftCallsign },
+                      bubbles: true,
+                      cancelable: true
+                    });
+                    console.log('Dispatching event:', event);
+                    const dispatched = window.dispatchEvent(event);
+                    console.log('Event dispatched, result:', dispatched);
+                    mapRef.current?.closePopup();
+                  };
+                }
+              }, 100);
+            });
+          }
         });
       });
     }
@@ -512,7 +699,7 @@ export const TacticalMap = () => {
     // Show aircraft markers only when zoomed in close (zoom level >= 15, like when clicking on base)
     // מטוסים יוצגו רק כשמגדילים את המפה (כמו שהיה קודם - zoom >= 15)
     // וגם יש פילטר פעיל (לא 'all')
-    if (zoomLevel >= 15 && aircraftFilter && aircraftFilter !== 'all' && mapRef.current) {
+    if (zoomLevel >= 15 && aircraftFilter && mapRef.current) {
       // Filter aircraft based on selected filter
       // אם אין מטוס בכיפה, הוא נחשב באוויר
       let filteredAircraft: typeof aircraft = [];
@@ -651,7 +838,7 @@ export const TacticalMap = () => {
         };
 
         planeMarker.bindPopup(`
-          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; min-width: 200px;">
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; min-width: 200px; direction: rtl;">
             <div style="font-weight: bold; margin-bottom: 4px; color: ${isSuspicious ? '#ef4444' : '#0ea5e9'};">
               ${plane.callsign}
             </div>
@@ -660,6 +847,12 @@ export const TacticalMap = () => {
               מיקום: ${plane.location === 'air' ? 'באוויר' : 'על הקרקע'}
             </div>
             <div style="font-size: 11px; margin-bottom: 4px;">${getAircraftLocation()}</div>
+            ${isSuspicious && plane.suspicionReason ? `
+              <div style="margin-top: 6px; padding: 6px; background: #fee2e2; border: 1px solid #ef4444; border-radius: 4px;">
+                <div style="font-weight: bold; font-size: 10px; color: #991b1b; margin-bottom: 2px;">סיבה לחשד:</div>
+                <div style="font-size: 10px; color: #dc2626;">${plane.suspicionReason}</div>
+              </div>
+            ` : ''}
             ${plane.lastStatusUpdate ? `
               <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #333;">
                 <div style="font-size: 10px;">עדכון אחרון: ${formatDate(plane.lastStatusUpdate)}</div>
@@ -700,6 +893,86 @@ export const TacticalMap = () => {
     <div className="relative w-full h-full" style={{ minHeight: '500px' }}>
       <div ref={containerRef} className="w-full h-full" style={{ minHeight: '500px' }} />
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-background/20 to-transparent" />
+      {/* לוגו חיל האוויר בפינה */}
+      <div className="absolute top-4 right-4 pointer-events-auto z-[1000]">
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          border: '2px solid #1e40af',
+          borderRadius: '8px',
+          padding: '8px 12px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <img 
+            src={airForceLogo}
+            alt="חיל האוויר" 
+            style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '50px' }}
+            onError={(e) => {
+              // אם התמונה לא נטענה, מציג SVG פשוט
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }}
+          />
+          <div style={{
+            fontWeight: 700,
+            fontSize: '14px',
+            color: '#1e40af',
+            direction: 'rtl',
+          }}>חיל האוויר</div>
+        </div>
+      </div>
+      
+      {/* Modal לסימון מטוס כחשוד */}
+      <Dialog open={suspicionModalOpen} onOpenChange={setSuspicionModalOpen}>
+        <DialogContent style={{ direction: 'rtl' }}>
+          <DialogHeader>
+            <DialogTitle>סימון מטוס כחשוד</DialogTitle>
+          </DialogHeader>
+          <div style={{ marginTop: '16px' }}>
+            <Label htmlFor="suspicion-reason" style={{ marginBottom: '8px', display: 'block' }}>
+              מטוס: {selectedAircraftForSuspicion?.callsign}
+            </Label>
+            <Label htmlFor="suspicion-reason" style={{ marginBottom: '8px', display: 'block' }}>
+              סיבה לסימון כחשוד:
+            </Label>
+            <Textarea
+              id="suspicion-reason"
+              value={suspicionReason}
+              onChange={(e) => setSuspicionReason(e.target.value)}
+              placeholder="הזן את הסיבה לסימון המטוס כחשוד..."
+              style={{ minHeight: '100px', direction: 'rtl' }}
+            />
+          </div>
+          <DialogFooter style={{ marginTop: '16px' }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSuspicionModalOpen(false);
+                setSuspicionReason('');
+                setSelectedAircraftForSuspicion(null);
+              }}
+            >
+              ביטול
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedAircraftForSuspicion && suspicionReason.trim()) {
+                  markAircraftAsSuspicious(selectedAircraftForSuspicion.id, suspicionReason.trim());
+                  setSuspicionModalOpen(false);
+                  setSuspicionReason('');
+                  setSelectedAircraftForSuspicion(null);
+                }
+              }}
+              disabled={!suspicionReason.trim()}
+              style={{ background: '#ef4444', color: 'white' }}
+            >
+              אישור
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
