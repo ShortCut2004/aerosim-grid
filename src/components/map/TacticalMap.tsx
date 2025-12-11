@@ -85,7 +85,7 @@ const getBaseLogoUrl = (name: string): string => {
     'רמת דוד': ramatDavidLogo,
     'מצפה רמון': ramonLogo,
     'חצור': hatzorLogo,
-    'גן יבנה': hatzorLogo, // גן יבנה זה חצור
+    'חצור': hatzorLogo, // חצור זה חצור
   };
   
   return logoMap[name] || '';

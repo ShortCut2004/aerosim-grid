@@ -168,7 +168,7 @@ export const LeftToolbar = ({ viewMode, onViewModeChange }: LeftToolbarProps) =>
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2 mb-2">
           <Plane className="w-5 h-5 text-primary" />
-          <h1 className="font-semibold text-foreground">סימולטור מטוסים</h1>
+          <h1 className="font-semibold text-foreground"> Fᴱ איפה</h1>
         </div>
         <div className="flex items-center gap-2 mb-3">
           <Badge variant={currentUser?.role === 'admin' ? 'tactical' : 'muted'}>
